@@ -1,24 +1,43 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { Text, View, ImageBackground, StyleSheet, ScrollView } from 'react-native';
 import { Input, Button, Icon, ListItem  } from 'react-native-elements';
+import {connect} from 'react-redux'
 
-const list = [
-  {
-    name: 'Alex',
-    message: 'Parfait et toi ?'
-  },
-  {
-    name: 'John',
-    message: 'Coucou ça roule ?'
-  }
-]
+import socketIOClient from "socket.io-client";
+
+
+var socket = socketIOClient("http://192.168.0.155:3000/");
+// var socket = socketIOClient("http://localhost:3000/");
+
+// const list = [
+//   {
+//     name: 'Alex',
+//     message: 'Parfait et toi ?'
+//   },
+//   {
+//     name: 'John',
+//     message: 'Coucou ça roule ?'
+//   }
+// ]
 
 function ChatScreen(props) {
+
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [listMessage, setListMessage] = useState([]);
+
+  useEffect( () => {
+    socket.on('sendMessageAll', (newMessage)=> {
+      console.log('newMessage : ', newMessage);
+      setListMessage([...listMessage, newMessage]);
+      setCurrentMessage('');
+    });
+  }, [currentMessage] )
+
   return (
     <View style={{flex:1}}> 
       <ScrollView style={{flex:1, marginTop: 30}}>
         {
-          list.map((line, index) => (
+          listMessage.map((line, index) => (
 
               <ListItem key={index} bottomDivider>
                 <ListItem.Content
@@ -26,7 +45,7 @@ function ChatScreen(props) {
                   inputStyle={{marginLeft: 10}}
                 >
                   <ListItem.Title>{line.message}</ListItem.Title>
-                  <ListItem.Subtitle>{line.name}</ListItem.Subtitle>
+                  <ListItem.Subtitle>{line.pseudo}</ListItem.Subtitle>
                 </ListItem.Content>
               </ListItem>
           ))
@@ -36,6 +55,8 @@ function ChatScreen(props) {
       containerStyle = {{marginBottom: 25, width: '70%'}}
       inputStyle={{marginLeft: 10}}
       placeholder='Your message'
+      value={currentMessage}
+      onChangeText={ (text) => setCurrentMessage(text) }
       />
     <Button buttonStyle={{backgroundColor:'#db5952'}}
       icon={<Icon
@@ -46,13 +67,17 @@ function ChatScreen(props) {
         style={{marginRight:10}}
       />}
       title='Send' 
-      onPress={ () => props.navigation.navigate('Home') }
+      onPress={ () => socket.emit('sendMessage', {message:currentMessage, pseudo:props.userPseudo}) }
       />
     </View>
   );
  }
 
- export default ChatScreen;
+ function mapStateProps(state) {
+   return {userPseudo: state.pseudo}
+ }
+
+ export default connect(mapStateProps, null)(ChatScreen);
 
  const styles = StyleSheet.create({
   container: {

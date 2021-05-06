@@ -1,3 +1,7 @@
+// Disable warnings on mobile app
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs(['Warning: ...']);
+
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';

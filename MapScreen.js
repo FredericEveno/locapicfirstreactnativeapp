@@ -17,7 +17,7 @@ function MapScreen(props) {
   const [modalDescription, setModalDescription] = useState('');
 
   useEffect( () => {
-    console.log('addPOI : ', addPOI);
+    // console.log('addPOI : ', addPOI);
     const askPermission = async () => {
       let {status} = await Permissions.askAsync(Permissions.LOCATION);
       console.log('status : ', status);
@@ -32,7 +32,6 @@ function MapScreen(props) {
     }
     askPermission();
     props.settlePOI(listPOI);
-
   }, [listPOI] )
 
   var selectPOI = (screenPress) => {
@@ -48,7 +47,7 @@ function MapScreen(props) {
 
   var handleModalButton = (titleFromModal, descriptionFromModal) => {
     console.log('bufferPOI : ', bufferPOI);
-    setListPOI([...listPOI,
+    setListPOI([...props.POIList,
       {
         longitude: bufferPOI.longitude,
         latitude: bufferPOI.latitude,
@@ -81,7 +80,7 @@ function MapScreen(props) {
           pinColor={'tomato'}
         />
         {
-          listPOI.map( (poi, index) => (
+          props.POIList.map( (poi, index) => (
             <Marker key={index}
             coordinate={poi}
             title={poi.title}
@@ -136,6 +135,11 @@ function MapScreen(props) {
   );
  }
 
+ function mapStateProps(state) {
+  console.log('poilist from store : ', state.poilist)
+  return {POIList: state.poilist, userPseudo: state.pseudo}
+}
+
  function mapDispatchToProps(dispatch) {
   return {
     settlePOI: function (poiList) {
@@ -144,7 +148,7 @@ function MapScreen(props) {
   }
  }
 
-export default connect(null, mapDispatchToProps)(MapScreen);
+export default connect(mapStateProps, mapDispatchToProps)(MapScreen);
 
 const styles = StyleSheet.create ({
   modalView: {
